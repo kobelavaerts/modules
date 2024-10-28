@@ -9,6 +9,19 @@ nextflow_process {
     tag "modules_nfcore"
     tag "mcstaging"
     tag "mcstaging/phenoimager2mc"
+    tag "untar"
+
+
+    setup {
+        run("UNTAR") {
+            script "modules/nf-core/untar/main.nf"
+            process {
+                """
+                input[0] = Channel.of([ [id: "test"], file("https://github.com/kobelavaerts/mock-test-data/raw/refs/heads/main/tiles.tar.gz", checkIfExists: true) ])
+                """
+            }
+        }
+    }
 
     test("phenoimager2mc - tif") {
         when {
@@ -50,6 +63,66 @@ test("phenoimager2mc - tif - stub") {
                         file(params.modules_testdata_base_path + 'imaging/staging/phenoimager/tile2.tif', checkIfExists: true)
                     ]
                 ]
+                """
+            }
+        }
+        then {
+            assertAll (
+                { assert process.success },
+                { assert snapshot(
+                      file(process.out.tif[0][1]).name,
+                      process.out.versions).match() }
+            )
+        }
+    }
+
+    test("phenoimager2mc - tif_folder") {
+        when {
+            process {
+                """
+                // define inputs of the process here. Example:
+                input[0]= UNTAR.out.untar
+
+                """
+            }
+        }
+        then {
+            assertAll (
+                { assert process.success },
+                { assert snapshot(
+                      file(process.out.tif[0][1]).name,
+                      process.out.versions).match() }
+            )
+        }
+    }
+
+// tmpdir = file("${projectDir}/tmpdir", type: "dir")
+// tmpdir.mkdir()
+// tif_file_1 = file(params.modules_testdata_base_path + 'imaging/staging/phenoimager/tile1.tif', checkIfExists: true)
+// tif_file_2 = file(params.modules_testdata_base_path + 'imaging/staging/phenoimager/tile2.tif', checkIfExists: true)
+// tif_file_1.copyTo(tmpdir)
+// tif_file_2.copyTo(tmpdir)
+
+
+    test("phenoimager2mc - tif_folder_cp") {
+        when {
+            process {
+                """
+                tmpdir = file("${projectDir}/tmpdir", type: 'dir')
+                tmpdir.mkdir()
+                tif_file_1 = file(params.modules_testdata_base_path + 'imaging/staging/phenoimager/tile1.tif', checkIfExists: true)
+                tif_file_2 = file(params.modules_testdata_base_path + 'imaging/staging/phenoimager/tile2.tif', checkIfExists: true)
+                tif_file_1.copyTo(tmpdir)
+                tif_file_2.copyTo(tmpdir)
+                // define inputs of the process here. Example:
+                input[0] = [
+                    [ id:'test' ],
+                    [
+                        file(tmpdir, type:'dir')
+                    ]
+                ]
+
+
                 """
             }
         }
