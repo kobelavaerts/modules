@@ -78,7 +78,7 @@ test("phenoimager2mc - tif - stub") {
                 input[0] = [
                     [ id:'test' ],
                     [
-                        file(tmpdir, type:'dir')
+                        file(tmpdir, type:'dir', checkIfExists: true)
                     ]
                 ]
 
@@ -112,7 +112,7 @@ test("phenoimager2mc - tif - stub") {
                 input[0] = [
                     [ id:'test' ],
                     [
-                        file(tmpdir, type:'dir')
+                        file(tmpdir, type:'dir', checkIfExists: true)
                     ]
                 ]
 
